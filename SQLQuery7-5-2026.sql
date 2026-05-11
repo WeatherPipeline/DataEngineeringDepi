@@ -1,0 +1,15 @@
+select	* from [dbo].[weather_day]
+
+--CREATE VIEW weather_day AS
+--SELECT 
+--    id AS ID,
+--    city AS City,
+--    country AS Country,
+--    [timestamp] AS [Timestamp],
+--    temperature AS Temperature,
+--    humidity AS Humidity,
+--    wind_speed AS [Wind Speed],
+--    predicted_temperature AS [Predicted Temperature],
+--    alert AS Alert,
+--    DATENAME(WEEKDAY, [timestamp]) AS Day
+--FROM WeatherForecast;

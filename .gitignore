@@ -1,0 +1,32 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.venv/
+*.egg-info/
+dist/
+build/
+
+# Airflow
+airflow-project/logs/
+airflow-project/airflow_backup.zip
+
+# Environment / Secrets
+airflow-project/.env
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+Thumbs.db
+desktop.ini
+.DS_Store
+
+# Docker
+postgres-db-volume/
+
+# Project files
+*.docx
