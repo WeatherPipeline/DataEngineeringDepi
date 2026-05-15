@@ -78,14 +78,14 @@ P/
 │   ├── dags/
 │   │   └── weather_etl_pipeline.py   # Airflow DAG (main pipeline)
 │   ├── config/
-│   │   └── airflow.cfg               # Airflow runtime configuration
-│   ├── docker-compose.yaml           # Container orchestration
+│   │   └── airflow.cfg                # Airflow runtime configuration
+│   ├── docker-compose.yaml            # Container orchestration
 │   ├── Dockerfile                     # Custom Airflow image with ODBC driver
 │   ├── .env                           # Environment variables (Fernet key, UID)
 │   ├── logs/                          # Execution logs (generated at runtime)
 │   └── plugins/                       # Custom Airflow plugins (reserved)
-├── test_7-5-2026.py                   # Standalone ETL script (runs outside Docker)
-├── SQLQuery7-5-2026.sql               # SQL view definition for weather_day
+├── weather_database_code.py           # Standalone ETL script (runs outside Docker)
+├── SQLQuery.sql                       # SQL view definition for weather_day
 ├── requirements.txt                   # Python dependencies (pinned)
 ├── airflow_backup.zip                 # Backup of Airflow metadata + old logs
 └── README.md
@@ -239,11 +239,11 @@ FROM WeatherForecast;
 
 ## Standalone Testing
 
-The `test_7-5-2026.py` script runs the same ETL logic outside of Docker.
+The `weather_database_code.py` script runs the same ETL logic outside of Docker.
 It connects to SQL Server on `localhost` instead of `host.docker.internal`.
 
 ```bash
-python test_7-5-2026.py
+python weather_database_code.py
 ```
 
 
