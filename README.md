@@ -54,7 +54,7 @@ then stores the results in Microsoft SQL Server with deduplication.
  Table    : WeatherForecast
 ```
 
-Airflow infrastructure (PostgreSQL 16, Redis 7.2) runs inside Docker Compose.
+Airflow infrastructure (SQL SERVER) runs inside Docker Compose.
 The target SQL Server runs on the Windows host and is accessed from containers
 via `host.docker.internal`.
 
@@ -66,7 +66,7 @@ via `host.docker.internal`.
   - TCP/IP protocol enabled on port 1433
   - SQL Server authentication enabled
   - Database `Weather_DataBase` created
-  - Login `sa` with password `Test1234!` (or update the DAG connection string)
+  - Login `sa` with password `YourStrongPassword123` (or update the DAG connection string)
 - ODBC Driver 17 for SQL Server installed on the host (for standalone testing)
 
 
@@ -187,18 +187,25 @@ are logged and skipped; they do not stop the pipeline.
 ![WeatherForecast Table](imgs/weatherforecast-table.png)
 
 ```sql
-CREATE TABLE WeatherForecast (
-    id                    INT IDENTITY(1,1) PRIMARY KEY,
-    city                  NVARCHAR(100),
-    country               NVARCHAR(100),
-    timestamp             DATETIME,
-    temperature           FLOAT,
-    humidity              FLOAT,
-    wind_speed            FLOAT,
-    predicted_temperature FLOAT,
-    alert                 NVARCHAR(100),
-    CONSTRAINT uq_city_timestamp UNIQUE(city, timestamp)
-);
+use Weather_DataBase
+select	* from weather_day
+select * from [dbo].[WeatherForecast]
+---------drop table WeatherForecast
+---------CREATE VIEW weather_day AS
+---------SELECT 
+---------    id AS ID,
+---------    city AS City,
+---------    country AS Country,
+---------    [timestamp] AS [Timestamp],
+---------    temperature AS Temperature,
+---------    humidity AS Humidity,
+---------    wind_speed AS [Wind Speed],
+---------    predicted_temperature AS [Predicted Temperature],
+---------    alert AS Alert,
+---------    weather_condition AS [Weather Condition],
+---------
+---------    DATENAME(WEEKDAY, [timestamp]) AS Day
+---------FROM WeatherForecast;
 ```
 
 ### Alert Classification
@@ -232,6 +239,7 @@ SELECT
     wind_speed AS [Wind Speed],
     predicted_temperature AS [Predicted Temperature],
     alert AS Alert,
+    weather_condition AS [Weather Condition],
     DATENAME(WEEKDAY, [timestamp]) AS Day
 FROM WeatherForecast;
 ```
@@ -251,8 +259,6 @@ python weather_database_code.py
 
 | Service             | Image                  | Purpose              |
 |---------------------|------------------------|----------------------|
-| postgres            | postgres:16            | Airflow metadata DB  |
-| redis               | redis:7.2-bookworm     | Celery broker        |
 | airflow-apiserver   | custom (Dockerfile)    | Web UI + REST API    |
 | airflow-scheduler   | custom (Dockerfile)    | DAG scheduling       |
 | airflow-dag-processor | custom (Dockerfile)  | DAG parsing          |
