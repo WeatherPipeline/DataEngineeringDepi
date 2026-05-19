@@ -1,3 +1,4 @@
+import os
 import requests
 import pandas as pd
 from sqlalchemy import create_engine, text
@@ -39,21 +40,45 @@ governorates = [
 ]
 
 # =====================================================
+# Weather Conditions
+# =====================================================
+
+weather_conditions = {
+    0: "Clear Sky",
+    1: "Mainly Clear",
+    2: "Partly Cloudy",
+    3: "Overcast",
+    45: "Fog",
+    48: "Rime Fog",
+    51: "Light Drizzle",
+    53: "Moderate Drizzle",
+    55: "Dense Drizzle",
+    61: "Slight Rain",
+    63: "Moderate Rain",
+    65: "Heavy Rain",
+    71: "Slight Snow",
+    73: "Moderate Snow",
+    75: "Heavy Snow",
+    95: "Thunderstorm"
+}
+
+# =====================================================
 # SQL Connection
 # =====================================================
 
-SERVER = "localhost"
-DATABASE = "Weather_DataBase"
-USERNAME = "sa"
-PASSWORD = "Test1234!"
-DRIVER = "ODBC Driver 17 for SQL Server"
+SERVER = os.getenv("WEATHER_DB_SERVER", ".")
+DATABASE = os.getenv("WEATHER_DB_NAME", "Weather_DataBase")
+USERNAME = os.getenv("WEATHER_DB_USER", "sa")
+PASSWORD = os.getenv("WEATHER_DB_PASSWORD", "YourStrongPassword123")
+DRIVER = os.getenv("WEATHER_DB_DRIVER", "ODBC Driver 17 for SQL Server")
 
 params = urllib.parse.quote_plus(
     f"DRIVER={{{DRIVER}}};"
     f"SERVER={SERVER};"
     f"DATABASE={DATABASE};"
     f"UID={USERNAME};"
-    f"PWD={PASSWORD}"
+    f"PWD={PASSWORD};"
+    f"TrustServerCertificate=yes;"
 )
 
 conn_str = f"mssql+pyodbc:///?odbc_connect={params}"
@@ -73,28 +98,44 @@ def create_table():
         FROM sysobjects
         WHERE name='WeatherForecast'
         AND xtype='U'
-    )
+        )
 
     CREATE TABLE WeatherForecast (
+        id INT IDENTITY(1,1) PRIMARY KEY,
 
-    id INT IDENTITY(1,1) PRIMARY KEY,
+        city NVARCHAR(100),
+        country NVARCHAR(100),
 
-    city NVARCHAR(100),
-    country NVARCHAR(100),
+        timestamp DATETIME,
 
-    timestamp DATETIME,
+        temperature FLOAT,
+        humidity FLOAT,
+        wind_speed FLOAT,
 
-    temperature FLOAT,
-    humidity FLOAT,
-    wind_speed FLOAT,
+        predicted_temperature FLOAT,
 
-    predicted_temperature FLOAT,
+        weather_condition NVARCHAR(100),
 
-    alert NVARCHAR(100),
+        alert NVARCHAR(100),
 
-    CONSTRAINT uq_city_timestamp
-    UNIQUE(city, timestamp)
-)
+        CONSTRAINT uq_city_timestamp UNIQUE(city, timestamp)
+    )
+
+    IF OBJECT_ID('weather_day', 'V') IS NULL
+        EXEC('CREATE VIEW weather_day AS
+        SELECT
+            id AS ID,
+            city AS City,
+            country AS Country,
+            [timestamp] AS [Timestamp],
+            temperature AS Temperature,
+            humidity AS Humidity,
+            wind_speed AS [Wind Speed],
+            predicted_temperature AS [Predicted Temperature],
+            weather_condition AS [Weather Condition],
+            alert AS Alert,
+            DATENAME(WEEKDAY, [timestamp]) AS Day
+        FROM WeatherForecast')
 
     """
 
@@ -118,7 +159,7 @@ def get_weather_data():
         params = {
             "latitude": gov["lat"],
             "longitude": gov["lon"],
-            "current": "temperature_2m,relative_humidity_2m,wind_speed_10m",
+            "current": "temperature_2m,relative_humidity_2m,wind_speed_10m,weather_code",
             "timezone": "Africa/Cairo"
         }
 
@@ -138,9 +179,17 @@ def get_weather_data():
                 "city": gov["city"],
                 "country": gov["country"],
                 "timestamp": current["time"],
-                "temperature": current["temperature_2m"],
-                "humidity": current["relative_humidity_2m"],
-                "wind_speed": current["wind_speed_10m"]
+
+                "temperature": round(current["temperature_2m"], 1),
+
+                "humidity": round(current["relative_humidity_2m"], 1),
+
+                "wind_speed": round(current["wind_speed_10m"], 1),
+
+                "weather_condition": weather_conditions.get(
+                    current["weather_code"],
+                    "Unknown"
+                )
             })
 
             print(f"[SUCCESS] {gov['city']} collected")
@@ -157,7 +206,7 @@ def get_weather_data():
     # Convert datetime
     df["timestamp"] = pd.to_datetime(df["timestamp"])
 
-    # Alert system
+    # Alert System
     df["alert"] = df["temperature"].apply(
         lambda x:
         "High Temperature"
@@ -167,9 +216,11 @@ def get_weather_data():
 
     # AI Prediction
     X = df[["humidity", "wind_speed"]]
+
     y = df["temperature"]
 
     model = LinearRegression()
+
     model.fit(X, y)
 
     df["predicted_temperature"] = model.predict(X).round(1)
@@ -258,8 +309,11 @@ def load_data(df):
             )
 
     print("\n=========== SUMMARY ===========")
+
     print(f"Inserted : {inserted}")
+
     print(f"Skipped  : {skipped}")
+
     print("================================")
 
 # =====================================================
