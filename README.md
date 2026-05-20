@@ -1,6 +1,6 @@
 # Weather ETL Pipeline for Egypt Governorates
 
-![Weather ETL Pipeline Dashboard](imgs/main-dashboard.png)
+![Weather ETL Pipeline Dashboard](imgs/main-dashboard.jpg)
 
 | Attribute  | Value                                  |
 |------------|----------------------------------------|
@@ -144,7 +144,9 @@ Unpause the `weather_etl_pipeline` DAG to start hourly runs.
 
 ### Task Flow
 
-![ETL Pipeline Flow](imgs/pipeline-etl-flow.png)
+![ETL Pipeline Flow](imgs/DAG-ETL-Pipeline.jpg)
+
+![Task Flow Graph](imgs/taskflow.jpg)
 
 ```
 create_weather_table >> load_weather_data
@@ -184,7 +186,7 @@ are logged and skipped; they do not stop the pipeline.
 
 ![Database Schema](imgs/database-schema.png)
 
-![WeatherForecast Table](imgs/weatherforecast-table.png)
+![WeatherForecast Table](imgs/task.jpg)
 
 ```sql
 use Weather_DataBase
