@@ -132,7 +132,7 @@ Unpause the `weather_etl_pipeline` DAG to start hourly runs.
 
 ## DAG: weather_etl_pipeline
 
-![DAG Configuration](imgs/dag-configuration.png)
+![DAG ETL Pipeline](imgs/DAG-ETL-Pipeline.jpg)
 
 | Property    | Value                  |
 |-------------|------------------------|
@@ -143,8 +143,6 @@ Unpause the `weather_etl_pipeline` DAG to start hourly runs.
 | retries     | 1 (5 min delay)        |
 
 ### Task Flow
-
-![ETL Pipeline Flow](imgs/DAG-ETL-Pipeline.jpg)
 
 ![Task Flow Graph](imgs/taskflow.jpg)
 
